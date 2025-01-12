@@ -140,7 +140,7 @@ export default function TestInstructions({
           {/* Header */}
           <div className="text-center space-y-3">
             <Brain className="h-10 w-10 mx-auto text-[#E36C59]" />
-            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
               Uncover Your Political Values
             </h1>
           </div>
