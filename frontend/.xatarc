@@ -1,0 +1,6 @@
+{
+  "databaseURL": "https://bitfalt-mmda85.us-east-1.xata.sh/db/MindVault-MiniApp",
+  "codegen": {
+    "output": "src/lib/xata.ts"
+  }
+}

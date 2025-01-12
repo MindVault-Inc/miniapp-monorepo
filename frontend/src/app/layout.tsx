@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { MiniKitProvider } from "@/providers/MiniKitProvider";
+import NextAuthProvider from "@/providers/next-auth-provider";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import "./globals.css";
@@ -27,6 +28,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body className={`${spaceGrotesk.variable} min-h-screen bg-background text-foreground antialiased`}>
+        <NextAuthProvider>
         <MiniKitProvider>
           <SidebarProvider defaultOpen={true}>
             <div className="flex min-h-screen w-full">
@@ -48,6 +50,7 @@ export default function RootLayout({
             </div>
           </SidebarProvider>
         </MiniKitProvider>
+        </NextAuthProvider>
       </body>
     </html>
   );

@@ -1,6 +1,0 @@
-{
-  "databaseURL": "${XATA_DATABASE_URL}",
-  "codegen": {
-    "output": "src/xata.ts"
-  }
-}
