@@ -1,23 +1,26 @@
-import fetch from "node-fetch";
 import { MiniAppPaymentSuccessPayload } from "@worldcoin/minikit-js";
-import { RequestHandler } from "express";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
 interface IRequestPayload {
   payload: MiniAppPaymentSuccessPayload;
 }
 
-export const confirmPaymentHandler: RequestHandler = async (req, res) => {
-  const { payload } = req.body as IRequestPayload;
+export async function POST(req: NextRequest) {
+  const { payload } = (await req.json()) as IRequestPayload;
 
   // IMPORTANT: Here we should fetch the reference you created in /initiate-payment to ensure the transaction we are verifying is the same one we initiated
-  // const reference = getReferenceFromDB();
-  const reference = req.cookies["payment-nonce"];
+  //   const reference = getReferenceFromDB();
+  const cookieStore = cookies();
+
+  const reference = cookieStore.get("payment-nonce")?.value;
+
+  console.log(reference);
 
   if (!reference) {
-    res.json({ success: false });
-    return;
+    return NextResponse.json({ success: false });
   }
-
+  console.log(payload);
   // 1. Check that the transaction we received from the mini app is the same one we sent
   if (payload.reference === reference) {
     const response = await fetch(
@@ -29,20 +32,13 @@ export const confirmPaymentHandler: RequestHandler = async (req, res) => {
         },
       }
     );
-
-    // TODO - missing types
-    const transaction = (await response.json()) as any;
+    const transaction = await response.json();
     // 2. Here we optimistically confirm the transaction.
     // Otherwise, you can poll until the status == mined
     if (transaction.reference == reference && transaction.status != "failed") {
-      res.json({ success: true });
-      return;
+      return NextResponse.json({ success: true });
     } else {
-      res.json({ success: false });
-      return;
+      return NextResponse.json({ success: false });
     }
-  } else {
-    res.json({ success: false });
-    return;
   }
-};
+}

@@ -17,6 +17,7 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "@types/node": "20",
     "@worldcoin/minikit-js": "1.1.1",
+    "@xata.io/client": "0.0.0-next.va121e4207b94bfe0a3c025fc00b247b923880930",
     "dotenv": "^16.4.5",
     "lucide-react": "^0.469.0",
     "next": "14.1.0",
