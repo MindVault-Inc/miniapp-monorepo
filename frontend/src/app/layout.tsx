@@ -34,7 +34,7 @@ export default function RootLayout({
             <div className="flex min-h-screen w-full">
               <AppSidebar />
               <main className="flex-1 min-h-screen bg-background">
-                <SidebarInset className="p-4 md:p-6 h-full min-h-screen">
+                <SidebarInset className="h-full min-h-screen">
                   <div className="relative max-w-[1400px] mx-auto w-full h-full">
                     <SidebarTrigger 
                       className="absolute left-0 top-0 z-10 transition-all duration-200 ease-linear
