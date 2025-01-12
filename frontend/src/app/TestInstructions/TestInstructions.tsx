@@ -111,7 +111,7 @@ export default function TestInstructions({
       {/* Decorative background */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtZGFzaGFycmF5PSI4LDgiLz48L3N2Zz4=')] opacity-20" />
       
-      <div className="max-w-md mx-auto relative">
+      <div className="max-w-[421px] mx-auto relative">
         {/* Back Button */}
         <AnimatePresence>
           <motion.div
@@ -138,47 +138,47 @@ export default function TestInstructions({
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           {/* Header */}
-          <div className="text-center space-y-4">
-            <Brain className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16 mx-auto text-[#E36C59]" />
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight">
+          <div className="text-center space-y-3">
+            <Brain className="h-10 w-10 mx-auto text-[#E36C59]" />
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Uncover Your Political Values
             </h1>
           </div>
 
           {/* Main Card */}
-          <Card className="backdrop-blur-md bg-white/10 border-white/20 text-white p-4 sm:p-6 md:p-8 relative overflow-hidden w-[98%] sm:w-[95%] md:w-[90%] lg:w-[85%] max-w-3xl mx-auto">
+          <Card className="backdrop-blur-md bg-white/10 border-white/20 text-white p-4 sm:p-5 relative overflow-hidden w-full max-w-[421px] mx-auto">
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
             
-            <div className="relative space-y-4 sm:space-y-5 md:space-y-7">
-              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center text-[#E36C59]">
+            <div className="relative space-y-3 sm:space-y-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-center text-white">
                 Before you start
               </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Test Description */}
-                <div className="flex items-start space-x-4">
-                  <FileQuestion className="h-6 w-6 text-[#E36C59] mt-1 flex-shrink-0" />
-                  <p className="text-sm sm:text-base text-white/90">
+                <div className="flex items-start space-x-3">
+                  <FileQuestion className="h-5 w-5 text-[#E36C59] mt-1 flex-shrink-0" />
+                  <p className="text-sm text-white/90">
                     This test consists of {totalQuestions} thought-provoking statements designed to explore your political beliefs. Your answers will reflect your position across eight core values.
                   </p>
                 </div>
 
                 {/* Honesty Reminder */}
-                <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10">
-                  <p className="text-center text-sm sm:text-base text-white/90 font-medium">
+                <div className="bg-white/5 p-2 sm:p-3 rounded-lg border border-white/10">
+                  <p className="text-center text-sm text-white/90 font-medium">
                     Please respond honestly, based on your true opinions.
                   </p>
                 </div>
 
                 {/* Test Info */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 text-white/90 space-y-2 sm:space-y-0">
-                  <p className="text-xs sm:text-sm md:text-base lg:text-lg">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-3 text-white/90 space-y-1 sm:space-y-0">
+                  <p className="text-xs sm:text-sm">
                     Estimated Time:
                     <span className="ml-1 font-semibold text-white">
                       {estimatedTime} min
                     </span>
                   </p>
-                  <p className="text-xs sm:text-sm md:text-base lg:text-lg">
+                  <p className="text-xs sm:text-sm">
                     Progress:
                     <span className="ml-1 font-semibold text-white">
                       {currentQuestion}/{totalQuestions}
@@ -189,7 +189,7 @@ export default function TestInstructions({
 
               {/* Progress Bar */}
               {currentQuestion > 0 && (
-                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden mt-3">
                   <motion.div 
                     className="h-full bg-[#E36C59]"
                     initial={{ width: 0 }}
@@ -205,10 +205,10 @@ export default function TestInstructions({
           <motion.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex justify-center mt-8 sm:mt-10 md:mt-12"
+            className="flex justify-center mt-6"
           >
             <Button 
-              className="w-auto px-6 bg-gradient-to-r from-[#E36C59] to-[#E36C59]/90 hover:from-[#E36C59]/90 hover:to-[#E36C59] text-white py-2 sm:py-2.5 md:py-3 text-sm sm:text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
+              className="w-auto px-5 bg-gradient-to-r from-[#E36C59] to-[#E36C59]/90 hover:from-[#E36C59]/90 hover:to-[#E36C59] text-white py-2 text-sm font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
               onClick={() => router.push('/test/questions')}
             >
               {currentQuestion > 0 ? 'Continue test' : 'Start test'}
