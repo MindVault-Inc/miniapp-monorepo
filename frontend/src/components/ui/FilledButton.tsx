@@ -9,6 +9,7 @@ interface FilledButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement
   fullWidth?: boolean
   icon?: LucideIcon
   iconClassName?: string
+  className?: string
   children: React.ReactNode
 }
 

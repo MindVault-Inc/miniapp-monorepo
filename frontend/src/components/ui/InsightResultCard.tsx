@@ -17,7 +17,7 @@ export function InsightsDetail({
         {title}
       </h2>
       <p className="text-lg leading-relaxed italic">
-        "{description}"
+        &ldquo;{description}&rdquo;
       </p>
     </div>
   );
