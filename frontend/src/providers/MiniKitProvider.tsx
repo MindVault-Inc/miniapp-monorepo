@@ -1,14 +1,15 @@
 "use client";
 
-import { MiniKit } from "@worldcoin/minikit-js";
 import { ReactNode, useEffect } from "react";
+import { MiniKit } from "@worldcoin/minikit-js";
 
-export const MiniKitProvider = ({ children }: { children: ReactNode }) => {
+export default function MiniKitProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // @ts-expect-error - MiniKit.install accepts config object but types are incorrect
     MiniKit.install({
       styleIsolation: true,
-      enableTelemetry: false
+      enableTelemetry: false,
+      appId: process.env.NEXT_PUBLIC_WLD_APP_ID
     });
   }, []);
 
@@ -17,4 +18,4 @@ export const MiniKitProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </div>
   );
-}; 
+} 

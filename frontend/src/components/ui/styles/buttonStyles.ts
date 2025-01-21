@@ -6,7 +6,7 @@ export const buttonSizes = {
 
 export const buttonVariants = {
   default: 'bg-accent-red hover:bg-accent-redSoft',
-  success: 'bg-brand-primary hover:bg-brand-secondary',
+  secondary: 'bg-brand-secondary hover:bg-brand-secondary/90',
   warning: 'bg-accent-orange hover:bg-accent-orange/90'
 } as const
 

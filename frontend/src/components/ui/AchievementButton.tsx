@@ -4,7 +4,7 @@ export function AchievementButton({ hasNewAchievement = true }) {
   return (
     <button
       className={cn(
-        "w-[320px] h-[50px] relative bg-brand-secondary rounded-[20px]",
+        "w-[320px] h-[50px] relative bg-brand-secondary hover:bg-brand-secondary/90 rounded-[20px]",
         "sm:w-[365px]",
         "shadow-[0px_4px_4px_rgba(0,0,0,0.25)]",
         "flex items-center justify-center",
@@ -16,7 +16,7 @@ export function AchievementButton({ hasNewAchievement = true }) {
           <div className="w-3 h-3 rounded-full bg-accent-red" />
         )}
       </div>
-      <span className="text-neutral-black text-base sm:text-lg font-medium font-spaceGrotesk">
+      <span className="text-white text-base sm:text-lg font-medium font-spaceGrotesk">
         Latest Achievement
       </span>
     </button>

@@ -22,7 +22,7 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="flex min-h-screen flex-col items-center p-4 md:p-6 mt-16 md:mt-14">
+    <div className="flex flex-col items-center p-4 md:p-6 mt-16 md:mt-14">
       <div className="w-full max-w-2xl px-4">
         <div className="mb-6 md:mb-8">
           <h1 className="text-3xl md:text-4xl font-bold font-spaceGrotesk mb-2">
