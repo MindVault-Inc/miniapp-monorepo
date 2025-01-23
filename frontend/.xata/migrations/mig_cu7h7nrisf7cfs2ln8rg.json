@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cu7h7nrisf7cfs2ln8rg",
+    "operations": [
+      {
+        "add_column": {
+          "up": "false",
+          "table": "Questions",
+          "column": {
+            "name": "std_answer",
+            "type": "bool",
+            "comment": ""
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cu7h7nrisf7cfs2ln8rg",
+  "parent": "mig_ctvenqnu4vn5gjmcunrg",
+  "schema": "public",
+  "startedAt": "2025-01-21T03:26:23.483378Z"
+}

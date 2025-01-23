@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cu8qal6trfea4ndan9n0",
+    "operations": [
+      {
+        "add_column": {
+          "up": "0",
+          "table": "Tests",
+          "column": {
+            "name": "total_questions",
+            "type": "int",
+            "comment": ""
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cu8qal6trfea4ndan9n0",
+  "parent": "mig_cu7h7nrisf7cfs2ln8rg",
+  "schema": "public",
+  "startedAt": "2025-01-23T02:11:32.373355Z"
+}
