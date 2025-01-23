@@ -11,6 +11,7 @@ interface TestCardProps {
   answeredQuestions: number
   achievements: Achievement[]
   onCardClick: () => void
+  title: string
 }
 
 export function TestCard({
@@ -18,6 +19,7 @@ export function TestCard({
   answeredQuestions,
   achievements,
   onCardClick,
+  title,
 }: TestCardProps) {
   const progress = Math.round((answeredQuestions / totalQuestions) * 100)
 
@@ -29,7 +31,7 @@ export function TestCard({
       <div className="absolute inset-0 bg-black opacity-20 rounded-3xl transform translate-y-2 blur-md"></div>
       <div className="relative z-10">
         <div className="p-6 relative">
-          <h2 className="text-center text-3xl font-bold mb-4 tracking-tight">Ideology Test</h2>
+          <h2 className="text-center text-3xl font-bold mb-4 tracking-tight">{title}</h2>
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm font-medium">

@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cu8uh27lmd4pfs40o370",
+    "operations": [
+      {
+        "add_column": {
+          "table": "Users",
+          "column": {
+            "name": "subscription_expires",
+            "type": "timestamptz",
+            "comment": "",
+            "nullable": true
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cu8uh27lmd4pfs40o370",
+  "parent": "mig_cu8qal6trfea4ndan9n0",
+  "schema": "public",
+  "startedAt": "2025-01-23T06:58:17.728442Z"
+}

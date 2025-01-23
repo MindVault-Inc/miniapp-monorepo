@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, ChangeEvent, KeyboardEvent, InputHTMLAttributes, forwardRef } from 'react'
-import { Search } from 'lucide-react'
+import { FaSearch, FaTimes } from 'react-icons/fa'
 
 // Utility function for class names
 const cn = (...classes: (string | boolean | undefined)[]) => classes.filter(Boolean).join(' ')
@@ -13,7 +13,7 @@ const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>
       <input
         type={type}
         className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-10 w-full rounded-full border border-teal-600 bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         ref={ref}
@@ -37,37 +37,41 @@ export default function SearchBar({
 }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  const handleSearch = () => {
-    onSearch(searchQuery)
-  }
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
+    setSearchQuery(e.target.value);
   }
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    }
+  const handleSearch = () => {
+    onSearch(searchQuery);
+  }
+
+  const handleClear = () => {
+    setSearchQuery('');
   }
 
   return (
     <div className={cn("relative w-full max-w-md", className)}>
       <Input
-        type="search"
+        type="text"
         placeholder={placeholder}
         value={searchQuery}
         onChange={handleInputChange}
-        onKeyPress={handleKeyPress}
-        className="w-full h-12 pl-4 pr-12 bg-white rounded-full border-0 text-gray-600 placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0"
+        className="w-full h-12 pl-4 pr-12 bg-white rounded-full border-0 text-gray-600 placeholder:text-gray-400 text-lg font-bold"
       />
-      <button
-        onClick={handleSearch}
-        className="absolute right-3 top-1/2 -translate-y-1/2 bg-[#1B4B43] p-2 rounded-full transition-colors hover:bg-[#15372F] focus:outline-none focus:ring-2 focus:ring-[#1B4B43] focus:ring-offset-2"
-        aria-label="Search"
-      >
-        <Search className="w-4 h-4 text-white" />
-      </button>
+      <div className="absolute right-2 top-2 flex items-center space-x-2">
+        <button 
+          onClick={handleClear} 
+          className="h-8 px-2 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors duration-200"
+        >
+          <FaTimes />
+        </button>
+        <button 
+          onClick={handleSearch} 
+          className="h-8 px-4 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200"
+        >
+          <FaSearch />
+        </button>
+      </div>
     </div>
   )
 }

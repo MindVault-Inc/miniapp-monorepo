@@ -41,10 +41,17 @@ export async function GET(
 ) {
   try {
     const xata = getXataClient();
-    
+    // Validate testId
+    const testId = parseInt(params.testId);
+    if (Number.isNaN(testId) || testId <= 0) {
+      return NextResponse.json(
+        { error: "Invalid test ID" },
+        { status: 400 }
+      );
+    }
     // Get test details and total questions count
     const test = await xata.db.Tests.filter({
-      test_id: parseInt(params.testId)
+      test_id: testId
     }).getFirst();
 
     if (!test) {

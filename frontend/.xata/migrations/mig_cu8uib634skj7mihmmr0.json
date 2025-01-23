@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cu8uib634skj7mihmmr0",
+    "operations": [
+      {
+        "add_column": {
+          "up": "0",
+          "table": "InsightsPerUserCategory",
+          "column": {
+            "name": "right_percentage",
+            "type": "int",
+            "comment": ""
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cu8uib634skj7mihmmr0",
+  "parent": "mig_cu8ui7flmd4pfs40o390",
+  "schema": "public",
+  "startedAt": "2025-01-23T07:01:01.544897Z"
+}

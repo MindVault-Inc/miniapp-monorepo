@@ -1,0 +1,24 @@
+{
+  "done": true,
+  "migration": {
+    "name": "mig_cu8ui17lmd4pfs40o380",
+    "operations": [
+      {
+        "add_column": {
+          "up": "''",
+          "table": "InsightsPerUserCategory",
+          "column": {
+            "name": "description",
+            "type": "text",
+            "comment": ""
+          }
+        }
+      }
+    ]
+  },
+  "migrationType": "pgroll",
+  "name": "mig_cu8ui17lmd4pfs40o380",
+  "parent": "mig_cu8uh27lmd4pfs40o370",
+  "schema": "public",
+  "startedAt": "2025-01-23T07:00:21.341474Z"
+}
