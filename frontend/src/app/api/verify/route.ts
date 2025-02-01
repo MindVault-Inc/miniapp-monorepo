@@ -5,7 +5,6 @@ import {
 } from "@worldcoin/minikit-js";
 import { NextRequest, NextResponse } from "next/server";
 import { getXataClient } from "@/lib/utils";
-import { getServerSession } from "next-auth";
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
@@ -145,36 +144,37 @@ export async function POST(req: NextRequest) {
 
     if (verifyRes.success) {
       const xata = getXataClient();
-      let user = null;
-
-      // Try NextAuth session first
-      const session = await getServerSession();
-      if (session?.user?.email) {
-        user = await xata.db.Users.filter('email', session.user.email).getFirst();
+      let user;
+  
+      // Get token from cookies
+      const token = cookies().get('session')?.value;
+      
+      if (!token) {
+        return NextResponse.json(
+          { error: "Unauthorized" },
+          { status: 401 }
+        );
       }
-
-      // If no user found, try JWT wallet auth
-      if (!user) {
-        const token = cookies().get('session')?.value;
-        if (token) {
-          try {
-            const { payload: jwtPayload } = await jwtVerify(token, secret);
-            if (jwtPayload.address) {
-              user = await xata.db.Users.filter('wallet_address', jwtPayload.address as string).getFirst();
-            }
-          } catch (error) {
-            console.error('JWT verification failed:', error);
-            return NextResponse.json({ 
-              error: 'Invalid session token'
-            }, { status: 401 });
-          }
+  
+      try {
+        const { payload } = await jwtVerify(token, secret);
+        if (payload.address) {
+          user = await xata.db.Users.filter({ 
+            wallet_address: payload.address 
+          }).getFirst();
         }
+      } catch (error) {
+        return NextResponse.json(
+          { error: "Invalid session" },
+          { status: 401 }
+        );
       }
-
+  
       if (!user) {
-        return NextResponse.json({ 
-          error: 'User not found'
-        }, { status: 404 });
+        return NextResponse.json(
+          { error: "User not found" },
+          { status: 404 }
+        );
       }
 
       // Update user's verified status using record ID
@@ -187,6 +187,7 @@ export async function POST(req: NextRequest) {
         success: true,
         message: 'Verification successful'
       }, { status: 200 });
+
     } else {
       return NextResponse.json({ 
         error: 'Verification failed',

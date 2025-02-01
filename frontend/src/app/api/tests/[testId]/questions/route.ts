@@ -1,6 +1,5 @@
 import { getXataClient } from "@/lib/utils";
 import { NextResponse } from "next/server";
-import { Question } from "@/app/types";
 
 export async function GET(
   request: Request,

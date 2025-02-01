@@ -66,33 +66,36 @@ const secret = new TextEncoder().encode(JWT_SECRET);
 export async function GET() {
   try {
     const xata = getXataClient();
-    let user = null;
+    let user;
 
-    // Try NextAuth session first
-    const session = await getServerSession();
-    if (session?.user?.email) {
-      user = await xata.db.Users.filter('email', session.user.email).getFirst();
+    // Get token from cookies
+    const token = cookies().get('session')?.value;
+    
+    if (!token) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    // If no user found, try JWT wallet auth
-    if (!user) {
-      const token = cookies().get('session')?.value;
-      if (token) {
-        try {
-          const { payload: jwtPayload } = await jwtVerify(token, secret);
-          if (jwtPayload.address) {
-            user = await xata.db.Users.filter('wallet_address', jwtPayload.address as string).getFirst();
-          }
-        } catch (error) {
-          console.error('JWT verification failed:', error);
-        }
+    try {
+      const { payload } = await jwtVerify(token, secret);
+      if (payload.address) {
+        user = await xata.db.Users.filter({ 
+          wallet_address: payload.address 
+        }).getFirst();
       }
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Invalid session" },
+        { status: 401 }
+      );
     }
 
     if (!user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
+        { error: "User not found" },
+        { status: 404 }
       );
     }
 

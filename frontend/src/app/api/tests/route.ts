@@ -1,7 +1,7 @@
 import { getXataClient } from "@/lib/utils";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-//import { auth } from "@clerk/nextjs";
+import { jwtVerify } from "jose";
+import { cookies } from "next/headers";
 
 /**
  * @swagger
@@ -110,18 +110,49 @@ import { getServerSession } from "next-auth";
  *                   type: string
  *                   example: "Failed to fetch tests"
  */
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+
+}
+const secret = new TextEncoder().encode(JWT_SECRET);
+
 export async function GET() {
   try {
-    // TODO: get user id from session
-    const userId = 'xd';
-    if (!userId) {
+    const xata = getXataClient();
+    let user;
+
+    // Get token from cookies
+    const token = cookies().get('session')?.value;
+    
+    if (!token) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    const xata = getXataClient();
+    try {
+      const { payload } = await jwtVerify(token, secret);
+      if (payload.address) {
+        user = await xata.db.Users.filter({ 
+          wallet_address: payload.address 
+        }).getFirst();
+      }
+    } catch (error) {
+      return NextResponse.json(
+        { error: "Invalid session" },
+        { status: 401 }
+      );
+    }
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
     
     // Fetch all tests with total_questions
     const tests = await xata.db.Tests.getAll({
@@ -132,7 +163,7 @@ export async function GET() {
     // Fetch user progress for all tests
     const allProgress = await xata.db.UserTestProgress.filter({
       "test.test_id": { $any: tests.map(t => t.test_id) },
-      "user.user_uuid": userId
+      "user.xata_id": user.xata_id
     }).getMany();
 
     type ProgressRecord = typeof allProgress[0];
