@@ -12,7 +12,7 @@ const Eruda = dynamic(() => import("./eruda-provider").then((c) => c.Eruda), {
 });
 
 export function ErudaProvider({ children }: ErudaProviderProps) {
-  if (process.env.NEXT_PUBLIC_APP_ENV === "production") {
+  if (process.env.NEXT_PUBLIC_ENABLE_DEVTOOLS !== "true") {
     return children;
   }
   return <Eruda>{children}</Eruda>;

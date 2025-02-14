@@ -10,7 +10,7 @@ interface ErudaProps {
 
 export function Eruda({ children }: ErudaProps) {
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_ENABLE_DEVTOOLS === "true") {
       try {
         eruda.init();
       } catch {

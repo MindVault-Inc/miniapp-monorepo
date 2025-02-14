@@ -28,6 +28,7 @@ export default function IdeologyTest() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [originalAnswers, setOriginalAnswers] = useState<Record<string, number>>({});
 
   const totalQuestions = questions.length;
   const progress = ((currentQuestion + 1) / totalQuestions) * 100;
@@ -49,6 +50,13 @@ export default function IdeologyTest() {
         const response = await fetch(`/api/tests/${testId}/progress`);
         if (response.ok) {
           const data = await response.json();
+          
+          // Check if test is already completed
+          if (data.status === "completed") {
+            router.push(`/insights?testId=${testId}`);
+            return;
+          }
+          
           if (data.answers && Object.keys(data.answers).length > 0) {
             const lastAnsweredId = Object.keys(data.answers).pop();
             const lastAnsweredIndex = loadedQuestions.findIndex(
@@ -61,6 +69,7 @@ export default function IdeologyTest() {
             setCurrentQuestion(nextQuestionIndex);
             setScores(data.scores || { econ: 0, dipl: 0, govt: 0, scty: 0 });
             setUserAnswers(data.answers);
+            setOriginalAnswers(data.answers);
           }
         }
       } catch (error) {
@@ -89,9 +98,8 @@ export default function IdeologyTest() {
   }, [testId]);
 
   const handleEndTest = async () => {
-    if (isSubmitting) return; // Prevent multiple submissions
+    if (isSubmitting) return;
 
-    // Check if all questions have been answered
     const unansweredQuestions = Object.keys(userAnswers).length;
     if (unansweredQuestions < questions.length) {
       setError(
@@ -105,6 +113,7 @@ export default function IdeologyTest() {
     setIsSubmitting(true);
 
     try {
+      // Calculate scores first as we'll need them in both cases
       const maxEcon = questions.reduce(
         (sum, q) => sum + Math.abs(q.effect.econ),
         0,
@@ -134,6 +143,17 @@ export default function IdeologyTest() {
         scty: Math.round(sctyScore),
       };
 
+      // Check if insights exist
+      const insightsResponse = await fetch(`/api/insights/${testId}`);
+      const hasExistingInsights = insightsResponse.ok && 
+        (await insightsResponse.json()).insights?.length > 0;
+
+      // Check if answers have changed
+      const hasAnswersChanged = Object.keys(originalAnswers).some(
+        key => originalAnswers[key] !== userAnswers[key]
+      );
+
+      // Save progress and update scores
       const response = await fetch(`/api/tests/${testId}/progress`, {
         method: "POST",
         headers: {
@@ -151,7 +171,23 @@ export default function IdeologyTest() {
         throw new Error("Failed to save final answers");
       }
 
-      const resultsResponse = await fetch(`/api/tests/${testId}/results`);
+      // Handle the three scenarios:
+      // 1. If insights exist and no changes - just redirect
+      if (hasExistingInsights && !hasAnswersChanged) {
+        router.push(`/insights?testId=${testId}`);
+        return;
+      }
+
+      // 2. If no insights exist - create new ones
+      // 3. If answers changed - rewrite existing insights
+      const resultsResponse = await fetch(`/api/tests/${testId}/results`, {
+        method: hasExistingInsights ? "PUT" : "POST", // Use PUT to update existing insights
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ forceUpdate: hasAnswersChanged }),
+      });
+
       if (!resultsResponse.ok) {
         throw new Error("Failed to save final results");
       }

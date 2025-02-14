@@ -37,6 +37,8 @@ export default function InsightsPage() {
   const [scores, setScores] = useState({ econ: 0, dipl: 0, govt: 0, scty: 0 });
   const [publicFigure, setPublicFigure] = useState("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isCanvasLoading, setIsCanvasLoading] = useState(true);
+  const [isGeminiLoading, setIsGeminiLoading] = useState(false);
 
   // Emit modal state changes
   useEffect(() => {
@@ -45,6 +47,14 @@ export default function InsightsPage() {
     });
     window.dispatchEvent(event);
   }, [isShareModalOpen]);
+
+  // Emit advanced insights modal state changes
+  useEffect(() => {
+    const event = new CustomEvent("shareModalState", {
+      detail: { isOpen: isModalOpen },
+    });
+    window.dispatchEvent(event);
+  }, [isModalOpen]);
 
   const testId = searchParams.get("testId");
 
@@ -80,7 +90,6 @@ export default function InsightsPage() {
           throw new Error("Failed to fetch scores");
         }
         const scoresData = await scoresResponse.json();
-        const { scores } = scoresData;
         setScores(scoresData.scores);
 
         // Get public figure match
@@ -91,44 +100,58 @@ export default function InsightsPage() {
         const figureData = await figureResponse.json();
         setPublicFigure(figureData.celebrity || "Unknown Match");
 
-        // Call Gemini API for full analysis (Pro users only)
-        if (isProUser) {
-          const geminiResponse = await fetch("/api/gemini-flash", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              econ: Number.parseFloat(scores.econ || "0"),
-              dipl: Number.parseFloat(scores.dipl || "0"),
-              govt: Number.parseFloat(scores.govt || "0"),
-              scty: Number.parseFloat(scores.scty || "0"),
-            }),
-          });
-
-          if (geminiResponse.status === 200) {
-            const geminiData = await geminiResponse.json();
-            setFullAnalysis(geminiData.analysis);
-          } else {
-            console.error(
-              "Error fetching Gemini analysis:",
-              geminiResponse.statusText,
-            );
-            setFullAnalysis(
-              "Failed to generate analysis. Please try again later.",
-            );
-          }
-        }
       } catch (error) {
         console.error("Error fetching insights:", error);
-        setFullAnalysis("Failed to generate analysis. Please try again later.");
       } finally {
         setLoading(false);
       }
     }
 
     void fetchInsights();
-  }, [testId, isProUser]);
+  }, [testId]);
+
+  // Separate effect for Gemini API call
+  useEffect(() => {
+    async function fetchGeminiAnalysis() {
+      if (!isProUser || !isModalOpen) return;
+      
+      setIsGeminiLoading(true);
+      try {
+        const geminiResponse = await fetch("/api/gemini-flash", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            econ: scores.econ || 0,
+            dipl: scores.dipl || 0,
+            govt: scores.govt || 0,
+            scty: scores.scty || 0,
+          }),
+        });
+
+        if (geminiResponse.status === 200) {
+          const geminiData = await geminiResponse.json();
+          setFullAnalysis(geminiData.analysis);
+        } else {
+          console.error(
+            "Error fetching Gemini analysis:",
+            geminiResponse.statusText,
+          );
+          setFullAnalysis(
+            "Failed to generate analysis. Please try again later.",
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching Gemini analysis:", error);
+        setFullAnalysis("Failed to generate analysis. Please try again later.");
+      } finally {
+        setIsGeminiLoading(false);
+      }
+    }
+
+    void fetchGeminiAnalysis();
+  }, [isProUser, isModalOpen, scores]);
 
   const handleAdvancedInsightsClick = () => {
     setIsModalOpen(true);
@@ -141,23 +164,6 @@ export default function InsightsPage() {
   const handleShareAnalysis = () => {
     setIsModalOpen(false);
     setIsShareModalOpen(true);
-  };
-
-  const downloadImage = () => {
-    if (!canvasRef.current) return;
-    try {
-      const canvas = canvasRef.current;
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = "results.png";
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("Error downloading image:", error);
-      alert("Failed to download image. Please try again.");
-    }
   };
 
   const handleInstagramShare = async () => {
@@ -227,7 +233,7 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-bg">
+    <div className="min-h-screen">
       <div className="bg-brand-tertiary p-10 pt-16 pb-12 rounded-b-[4rem] shadow-lg border-b border-brand-tertiary/20 relative overflow-hidden mb-12">
         <div className="absolute inset-0 bg-[url('/patterns/grid.svg')] opacity-20" />
         <motion.div
@@ -377,6 +383,11 @@ export default function InsightsPage() {
 
             <div className="p-6 text-center max-h-[70vh] overflow-y-auto scrollbar-custom">
               <div className="w-full max-w-md mx-auto">
+                {isCanvasLoading && (
+                  <div className="flex items-center justify-center min-h-[200px]">
+                    <LoadingSpinner />
+                  </div>
+                )}
                 <ResultsCanvas
                   ref={canvasRef}
                   econ={scores.econ}
@@ -384,52 +395,29 @@ export default function InsightsPage() {
                   govt={scores.govt}
                   scty={scores.scty}
                   closestMatch={publicFigure}
+                  ideology={ideology}
+                  onLoad={() => setIsCanvasLoading(false)}
                 />
               </div>
             </div>
 
-            <div className="flex justify-between gap-3 p-4 border-t border-white/10 bg-[#162026]/80">
-              <FilledButton
-                variant="default"
-                onClick={downloadImage}
-                aria-label="Download results as image"
-                className="flex-1 py-3 text-sm bg-[#387478] 
-                     flex items-center justify-center gap-2
-                     focus:ring-2 focus:ring-offset-2 focus:ring-[#387478]"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-label="Download results as image"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                  />
-                </svg>
-                <span className="whitespace-nowrap">Download Image</span>
-              </FilledButton>
+            <div className="flex justify-center p-6 border-t border-white/10 bg-[#162026]/80">
               <FilledButton
                 variant="default"
                 onClick={handleInstagramShare}
-                aria-label="Share results on Instagram"
-                className="flex-1 py-3 text-sm bg-[#E36C59]
-                     flex items-center justify-center gap-2
-                     focus:ring-2 focus:ring-offset-2 focus:ring-[#E36C59]"
+                aria-label="Share results"
+                className="w-full max-w-sm py-4 text-base font-medium bg-[#E36C59] hover:bg-[#E36C59]/90
+                     flex items-center justify-center gap-3
+                     focus:ring-2 focus:ring-offset-2 focus:ring-[#E36C59]
+                     transition-all duration-300 hover:scale-[1.02]
+                     sm:text-lg sm:py-5"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
+                  className="h-6 w-6 sm:h-7 sm:w-7"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  aria-label="Share results on Instagram"
                   aria-hidden="true"
                 >
                   <path
@@ -439,7 +427,7 @@ export default function InsightsPage() {
                     d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                   />
                 </svg>
-                <span className="whitespace-nowrap">Share Link</span>
+                <span className="whitespace-nowrap">Share Results</span>
               </FilledButton>
             </div>
           </motion.div>
@@ -498,9 +486,15 @@ export default function InsightsPage() {
             <div className="p-6 text-center max-h-[70vh] overflow-y-auto scrollbar-custom">
               {isProUser ? (
                 <div className="w-full max-w-3xl mx-auto">
-                  <p className="text-white/90 leading-relaxed text-base whitespace-pre-wrap">
-                    {fullAnalysis}
-                  </p>
+                  {isGeminiLoading ? (
+                    <div className="flex items-center justify-center min-h-[200px]">
+                      <LoadingSpinner />
+                    </div>
+                  ) : (
+                    <p className="text-white/90 leading-relaxed text-base whitespace-pre-wrap">
+                      {fullAnalysis}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="w-full max-w-md mx-auto space-y-4">
@@ -552,6 +546,17 @@ export default function InsightsPage() {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Emit modal state for bottom nav visibility */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dispatchEvent(new CustomEvent('modalState', { 
+              detail: { isOpen: ${isModalOpen} }
+            }));
+          `,
+        }}
+      />
     </div>
   );
 }
