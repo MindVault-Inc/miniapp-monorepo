@@ -1,6 +1,7 @@
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { headers } from 'next/headers'
 
 // List of public paths that don't require authentication
 const publicPaths = [
@@ -29,6 +30,20 @@ interface JWTPayload {
   walletAddress?: string;
   sub?: string;
   exp?: number;
+}
+
+// Add supported languages
+const SUPPORTED_LANGUAGES = ['en', 'fr', 'es', 'de'] // Add all languages you support
+
+// Helper to extract primary language from Accept-Language header
+function getPrimaryLanguage(acceptLanguage: string | null): string {
+  if (!acceptLanguage) return 'en'
+  
+  // Get first language code (e.g. 'fr-FR,fr;q=0.9,en;q=0.8' -> 'fr')
+  const primaryLang = acceptLanguage.split(',')[0].split('-')[0].toLowerCase()
+  
+  // Return primary language if supported, otherwise default to 'en'
+  return SUPPORTED_LANGUAGES.includes(primaryLang) ? primaryLang : 'en'
 }
 
 // Function to verify JWT token
@@ -63,9 +78,19 @@ async function verifyToken(token: string) {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Get Accept-Language header
+  const acceptLanguage = request.headers.get('accept-language')
+  const preferredLanguage = getPrimaryLanguage(acceptLanguage)
+
+  // Create response object that we'll modify
+  let response = NextResponse.next()
+
+  // Set Weglot language header
+  response.headers.set('Weglot-Language-Preference', preferredLanguage)
+
   // Allow public paths
   if (publicPaths.some((path) => pathname.startsWith(path))) {
-    return NextResponse.next();
+    return response
   }
 
   // Get session token and registration status
@@ -74,47 +99,55 @@ export async function middleware(request: NextRequest) {
 
   // For all protected routes
   if (!sessionToken) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    response = NextResponse.redirect(new URL("/sign-in", request.url))
+    response.headers.set('Weglot-Language-Preference', preferredLanguage)
+    return response
   }
 
   try {
-    const decoded = await verifyToken(sessionToken);
+    const decoded = await verifyToken(sessionToken)
     if (!decoded) {
-      const response = NextResponse.redirect(new URL("/sign-in", request.url));
-      response.cookies.delete("session");
-      response.cookies.delete("registration_status");
-      return response;
+      response = NextResponse.redirect(new URL("/sign-in", request.url))
+      response.cookies.delete("session")
+      response.cookies.delete("registration_status")
+      response.headers.set('Weglot-Language-Preference', preferredLanguage)
+      return response
     }
 
     // Handle registration flow
     if (pathname !== "/register" && registrationStatus !== "complete") {
-      const url = new URL("/register", request.url);
+      const url = new URL("/register", request.url)
       if (decoded.walletAddress) {
-        url.searchParams.set("walletAddress", decoded.walletAddress);
+        url.searchParams.set("walletAddress", decoded.walletAddress)
       }
-      return NextResponse.redirect(url);
+      response = NextResponse.redirect(url)
+      response.headers.set('Weglot-Language-Preference', preferredLanguage)
+      return response
     }
 
     // Add user info to request headers for API routes
     if (pathname.startsWith("/api/")) {
-      const requestHeaders = new Headers(request.headers);
-      requestHeaders.set("x-user-id", decoded.sub as string);
-      requestHeaders.set("x-wallet-address", decoded.walletAddress as string);
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set("x-user-id", decoded.sub as string)
+      requestHeaders.set("x-wallet-address", decoded.walletAddress as string)
+      requestHeaders.set("x-preferred-language", preferredLanguage)
 
       return NextResponse.next({
         request: {
           headers: requestHeaders,
         },
-      });
+      })
     }
 
-    return NextResponse.next();
+    return response
+
   } catch {
     // Clear invalid session
-    const response = NextResponse.redirect(new URL("/sign-in", request.url));
-    response.cookies.delete("session");
-    response.cookies.delete("registration_status");
-    return response;
+    response = NextResponse.redirect(new URL("/sign-in", request.url))
+    response.cookies.delete("session")
+    response.cookies.delete("registration_status")
+    response.headers.set('Weglot-Language-Preference', preferredLanguage)
+    return response
   }
 }
 
