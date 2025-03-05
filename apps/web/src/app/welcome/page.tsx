@@ -7,19 +7,22 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { FilledButton } from "@/components/ui/buttons/FilledButton";
-import { useAuth } from "@/hooks";
 
 export default function Welcome() {
   const router = useRouter();
-  const { isAuthenticated, isRegistered } = useAuth();
   const [firstName, setFirstName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Function to fetch user data with better error handling
     async function fetchUserData() {
       try {
         setIsLoading(true);
-        const response = await fetch("/api/user/me", {
+        console.log("Fetching user data for welcome page...");
+        
+        // First try: Use the user/me API endpoint
+        let response = await fetch("/api/user/me", {
+          method: "GET",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
@@ -28,28 +31,79 @@ export default function Welcome() {
           },
         });
 
+        console.log("User data response status:", response.status);
+        
         if (response.ok) {
           const userData = await response.json();
-          const extractedName = userData.name?.split(" ")[0] || "User";
-          setFirstName(extractedName);
+          console.log("User data fetched successfully:", userData);
+          
+          // Extract first name from the full name
+          if (userData.name) {
+            const extractedName = userData.name.split(" ")[0];
+            console.log("Setting user name to:", extractedName);
+            setFirstName(extractedName);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Second try: Check session API for user data
+        console.log("Trying session API for user data...");
+        response = await fetch("/api/auth/session", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
+        
+        if (response.ok) {
+          const sessionData = await response.json();
+          console.log("Session data:", sessionData);
+          
+          if (sessionData.user?.name) {
+            const extractedName = sessionData.user.name.split(" ")[0];
+            console.log("Setting user name from session:", extractedName);
+            setFirstName(extractedName);
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        // Third try: Use name from sessionStorage (set during registration)
+        const savedName = sessionStorage.getItem("user_name");
+        if (savedName) {
+          console.log("Using saved name from sessionStorage:", savedName);
+          setFirstName(savedName);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fallback to generic name
+        console.log("All attempts failed, using generic name");
+        setFirstName("User");
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        
+        // Try to use name from sessionStorage as fallback
+        const savedName = sessionStorage.getItem("user_name");
+        if (savedName) {
+          console.log("Using saved name from sessionStorage after error:", savedName);
+          setFirstName(savedName);
         } else {
           setFirstName("User");
         }
-      } catch {
-        setFirstName("User");
       } finally {
         setIsLoading(false);
       }
     }
-
-    // Only fetch if we're authenticated and registered
-    if (isAuthenticated && isRegistered) {
-      void fetchUserData();
-    } else if (!isAuthenticated) {
-      // If not authenticated, redirect to sign-in
-      router.replace("/sign-in");
-    }
-  }, [isAuthenticated, isRegistered, router]);
+    
+    // Always fetch user data on the welcome page, regardless of auth state
+    fetchUserData();
+    
+  }, []);
 
   const handleGetStarted = async () => {
     try {
@@ -72,15 +126,6 @@ export default function Welcome() {
       router.replace("/sign-in");
     }
   };
-
-  // Check registration completion
-  useEffect(() => {
-    const registrationComplete = sessionStorage.getItem("registration_complete");
-
-    if (!registrationComplete && !isAuthenticated) {
-      router.replace("/sign-in");
-    }
-  }, [isAuthenticated, router]);
 
   if (isLoading) {
     return (

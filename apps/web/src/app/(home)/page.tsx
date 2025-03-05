@@ -25,7 +25,8 @@ interface User {
   verified?: boolean;
 }
 
-// Function to clear verification session
+// Function to clear verification session - no longer needed for this implementation
+// but kept for other uses in the codebase
 const clearVerificationSession = () => {
   sessionStorage.removeItem("verify-modal-shown");
 };
@@ -68,13 +69,10 @@ export default function Home() {
         const data = await response.json();
         setUserData(data.user);
 
-        // Check if user is verified
-        if (
-          !data.user.verified &&
-          !sessionStorage.getItem("verify-modal-shown")
-        ) {
+        // Show verify modal if user is not verified
+        // Removed the sessionStorage check to show it every time
+        if (!data.user.verified) {
           setShowVerifyModal(true);
-          sessionStorage.setItem("verify-modal-shown", "true");
         }
       } catch (error) {
         console.error("Error fetching home data:", error);

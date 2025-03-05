@@ -33,6 +33,15 @@ export function useAuth() {
       return;
     }
 
+    // Check if registration was just completed
+    const registrationComplete = sessionStorage.getItem("registration_complete");
+    if (registrationComplete && pathname === "/welcome") {
+      // If we're on the welcome page and registration was just completed,
+      // skip auth check to prevent redirection
+      setAuthState((prev) => ({ ...prev, loading: false }));
+      return;
+    }
+
     try {
       // Check session first
       const sessionResponse = await fetch("/api/auth/session", {

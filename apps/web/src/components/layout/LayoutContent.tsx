@@ -70,7 +70,16 @@ export function LayoutContent({ children }: LayoutContentProps) {
   useEffect(() => {
     const handleShareModalState = (e: Event) => {
       const event = e as CustomEvent<{ isOpen: boolean }>;
-      setIsShareModalOpen(event.detail.isOpen);
+      // If the modal is opening, immediately hide the nav
+      if (event.detail.isOpen) {
+        setIsShareModalOpen(true);
+      } else {
+        // If the modal is closing, add a small delay before showing the nav
+        // This prevents flickering during modal transitions
+        setTimeout(() => {
+          setIsShareModalOpen(false);
+        }, 100);
+      }
     };
 
     window.addEventListener('shareModalState', handleShareModalState);

@@ -9,7 +9,7 @@ import {
 import { MembershipCard } from "@/components/ui/cards";
 import { NotificationsToggle } from "@/components/ui/NotificationsToggle";
 import { SettingsCard } from "@/components/ui/cards";
-import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+// import { ToggleSwitch } from "@/components/ui/ToggleSwitch"; // Commented out as it's not currently used
 import { clearVerificationSession } from "@/hooks/useVerification";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -26,6 +26,32 @@ import {
 import { useRouter } from "next/navigation";
 import type * as React from "react";
 import { useEffect, useState } from "react";
+
+// Dummy toggle switch that doesn't actually change theme
+function DummyToggleSwitch() {
+  const [checked, setChecked] = useState(true);
+  
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => setChecked(prev => !prev)}
+      className={cn(
+        "h-6 w-12 rounded-full transition-colors duration-200",
+        checked ? "bg-accent-red" : "bg-neutral-grey",
+      )}
+    >
+      <span
+        className={cn(
+          "block h-[18px] w-5 rounded-full bg-white transition-transform duration-200",
+          checked ? "translate-x-6" : "translate-x-1",
+        )}
+        aria-hidden="true"
+      />
+    </button>
+  );
+}
 
 interface SubscriptionData {
   next_payment_date: string | null;
@@ -222,7 +248,8 @@ export default function SettingsPage() {
                 label: "Notifications",
                 element: <NotificationsToggle />,
               },
-              { Icon: Moon, label: "Dark Theme", element: <ToggleSwitch /> },
+              // Dark Theme toggle with dummy functionality
+              { Icon: Moon, label: "Dark Theme", element: <DummyToggleSwitch /> },
               {
                 Icon: FileText,
                 label: "View Privacy Policy",

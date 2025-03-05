@@ -5,8 +5,8 @@ import { NotificationDialog } from "@/components/ui/feedback/NotificationError";
 import { Input } from "@/components/ui/base/input";
 import { COUNTRIES, type CountryCode } from "@/constants/countries";
 import { MiniKit } from "@worldcoin/minikit-js";
-import type { RequestPermissionPayload } from "@worldcoin/minikit-js";
-import { Permission } from "@worldcoin/minikit-js";
+// import type { RequestPermissionPayload } from "@worldcoin/minikit-js";
+//import { Permission } from "@worldcoin/minikit-js";
 import { useRouter, useSearchParams } from "next/navigation";
 import type * as React from "react";
 import { useEffect, useState } from "react";
@@ -52,8 +52,11 @@ export default function Register() {
     }));
   }, [userId, router]);
 
-  // Function to request notification permission
+  // Function to request notification permission - commented out
   const requestPermission = async () => {
+    // Notification permission request is now commented out
+    // This allows registration to proceed without requiring notification permissions
+    /*
     const requestPermissionPayload: RequestPermissionPayload = {
       permission: Permission.Notifications,
     };
@@ -69,6 +72,10 @@ export default function Register() {
       }
       return null;
     }
+    */
+    
+    // Return a resolved promise to maintain function signature
+    return Promise.resolve(null);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -165,9 +172,40 @@ export default function Register() {
       // Request notification permission after successful registration
       await requestPermission();
 
-      // Set registration completion flag and redirect to welcome page
+      // Set registration completion flag and save user name for welcome page
       sessionStorage.setItem("registration_complete", "true");
-      router.push("/welcome");
+      sessionStorage.setItem("user_name", formData.name);
+      
+      // Add a longer delay to ensure session is properly established
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+      // Verify session was created successfully
+      try {
+        const verifySessionResponse = await fetch("/api/auth/session", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        });
+        
+        if (verifySessionResponse.ok) {
+          // Session verified, proceed to welcome page
+          console.log("Session verified successfully, redirecting to welcome page");
+          // Use push instead of replace to ensure proper navigation history
+          router.push("/welcome");
+        } else {
+          console.error("Session verification failed, retrying...");
+          // If session verification failed, try again after a delay
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          router.push("/welcome");
+        }
+      } catch (error) {
+        console.error("Error verifying session:", error);
+        // Even if verification fails, still try to redirect
+        router.push("/welcome");
+      }
     } catch (error) {
       setError(
         error instanceof Error

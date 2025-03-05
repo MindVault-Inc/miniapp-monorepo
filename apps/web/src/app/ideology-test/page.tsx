@@ -29,6 +29,8 @@ export default function IdeologyTest() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalAnswers, setOriginalAnswers] = useState<Record<string, number>>({});
   const [hasUnsavedChanges] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [isProcessingAnswer, setIsProcessingAnswer] = useState(false);
 
   const totalQuestions = questions.length;
   const progress = ((currentQuestion + 1) / totalQuestions) * 100;
@@ -236,7 +238,11 @@ export default function IdeologyTest() {
   };
 
   const handleAnswer = async (multiplier: number) => {
-    if (questions.length === 0 || isSubmitting) return;
+    if (questions.length === 0 || isSubmitting || isProcessingAnswer) return;
+
+    // Set the selected answer and processing state
+    setSelectedAnswer(multiplier);
+    setIsProcessingAnswer(true);
 
     const question = questions[currentQuestion];
     const updatedScores = {
@@ -270,11 +276,18 @@ export default function IdeologyTest() {
         [question.id]: multiplier,
       }));
 
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-      }
+      // Add a delay before moving to the next question
+      setTimeout(() => {
+        if (currentQuestion < questions.length - 1) {
+          setCurrentQuestion(currentQuestion + 1);
+        }
+        setIsProcessingAnswer(false);
+        setSelectedAnswer(null);
+      }, 800); // 800ms delay to show the selected answer
     } catch (error) {
       console.error("Error saving progress:", error);
+      setIsProcessingAnswer(false);
+      setSelectedAnswer(null);
     }
   };
 
@@ -393,9 +406,10 @@ export default function IdeologyTest() {
             )}
 
             {answerOptions.map((answer) => {
-              const isSelected =
-                userAnswers[questions[currentQuestion].id] ===
-                answer.multiplier;
+              const isSelected = 
+                selectedAnswer === answer.multiplier || 
+                userAnswers[questions[currentQuestion].id] === answer.multiplier;
+              
               return (
                 <FilledButton
                   key={`${answer.label}-${answer.multiplier}`}
@@ -407,6 +421,7 @@ export default function IdeologyTest() {
                       : "bg-[#387478] hover:bg-[#387478]/90"
                   } rounded-[30px] shadow-[0px_4px_4px_rgba(0,0,0,0.25)] text-white text-base font-bold`}
                   onClick={() => handleAnswer(answer.multiplier)}
+                  disabled={isProcessingAnswer}
                 >
                   {answer.label}
                 </FilledButton>
@@ -420,10 +435,10 @@ export default function IdeologyTest() {
                     variant="primary"
                     size="sm"
                     onClick={handlePrevious}
-                    disabled={currentQuestion === 0}
+                    disabled={currentQuestion === 0 || isProcessingAnswer}
                     className={cn(
                       "bg-[#E36C59] hover:bg-[#E36C59]/90",
-                      currentQuestion === 0 && "opacity-50 cursor-not-allowed"
+                      (currentQuestion === 0 || isProcessingAnswer) && "opacity-50 cursor-not-allowed"
                     )}
                   >
                     Previous
@@ -436,10 +451,10 @@ export default function IdeologyTest() {
                   variant="primary"
                   size="sm"
                   onClick={handleEndTest}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isProcessingAnswer}
                   className={cn(
                     "bg-green-600 hover:bg-green-700",
-                    isSubmitting && "opacity-50 cursor-not-allowed",
+                    (isSubmitting || isProcessingAnswer) && "opacity-50 cursor-not-allowed",
                   )}
                 >
                   {isSubmitting ? "Saving..." : "End Test"}
@@ -449,7 +464,11 @@ export default function IdeologyTest() {
                   variant="primary"
                   size="sm"
                   onClick={handleNext}
-                  className="bg-[#E36C59] hover:bg-[#E36C59]/90"
+                  disabled={isProcessingAnswer}
+                  className={cn(
+                    "bg-[#E36C59] hover:bg-[#E36C59]/90",
+                    isProcessingAnswer && "opacity-50 cursor-not-allowed"
+                  )}
                 >
                   Next
                 </FilledButton>

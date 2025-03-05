@@ -56,6 +56,15 @@ export default function InsightsPage() {
     window.dispatchEvent(event);
   }, [isModalOpen]);
 
+  // Combined effect to ensure bottom nav stays hidden when either modal is open
+  useEffect(() => {
+    const isAnyModalOpen = isShareModalOpen || isModalOpen;
+    const event = new CustomEvent("shareModalState", {
+      detail: { isOpen: isAnyModalOpen },
+    });
+    window.dispatchEvent(event);
+  }, [isShareModalOpen, isModalOpen]);
+
   const testId = searchParams.get("testId");
 
   useEffect(() => {
@@ -162,8 +171,11 @@ export default function InsightsPage() {
   };
 
   const handleShareAnalysis = () => {
-    setIsModalOpen(false);
     setIsShareModalOpen(true);
+    
+    setTimeout(() => {
+      setIsModalOpen(false);
+    }, 50);
   };
 
   const handleInstagramShare = async () => {

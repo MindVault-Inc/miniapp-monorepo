@@ -39,11 +39,13 @@ export function VerifyModal({ isOpen, onClose, onVerify }: VerifyModalProps) {
           </h2>
 
           <p className="mb-8 text-center font-spaceGrotesk text-[15px] font-bold leading-[25px] text-white">
-            Find your closest Orb and completely verify your World ID!
+            Use your World ID app to verify your identity!
             <br />
             <br />
-            By verifying you will have access to more features on the app and no
-            ads.
+            Simply tap &ldquo;Verify!&rdquo; below and follow the prompts to complete verification.
+            <br />
+            <br />
+            By verifying you will have access to more features on the app.
           </p>
 
           {error && (

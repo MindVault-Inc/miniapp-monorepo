@@ -8,11 +8,13 @@ const publicPaths = [
   "/api/auth/session",
   "/api/user",
   "/api/user/check",
+  "/api/user/by-wallet",
   "/api/nonce",
   "/api/complete-siwe",
   "/_next",
   "/favicon.ico",
   "/register",
+  "/welcome",
   "/MindVaultLogoTransparentHD.svg",
 ];
 
@@ -66,6 +68,15 @@ export async function middleware(request: NextRequest) {
   // Allow public paths
   if (publicPaths.some((path) => pathname.startsWith(path))) {
     return NextResponse.next();
+  }
+
+  // Special case for welcome page - check for registration_complete in cookies
+  if (pathname === "/welcome") {
+    // If we have registration_status cookie set to complete, allow access
+    const registrationStatus = request.cookies.get("registration_status")?.value;
+    if (registrationStatus === "complete") {
+      return NextResponse.next();
+    }
   }
 
   // Get session token and registration status
