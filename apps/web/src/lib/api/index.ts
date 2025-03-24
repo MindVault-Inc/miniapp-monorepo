@@ -1,1 +1,0 @@
-export { getApiDocs } from './swagger'; 

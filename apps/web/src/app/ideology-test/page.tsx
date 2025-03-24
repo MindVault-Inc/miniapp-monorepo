@@ -12,7 +12,7 @@ export default function IdeologyTest() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const testId = searchParams.get("testId") || "1";
-  const { t, tWithVars } = useTranslation();
+  const { t, tWithVars, language } = useTranslation();
 
   const answerOptions = [
     { label: t('ideologyTest.options.stronglyAgree'), multiplier: 1.0 },
@@ -86,7 +86,9 @@ export default function IdeologyTest() {
 
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(`/api/tests/${testId}/questions`);
+        // Add the language as a query parameter to the API request
+        const response = await fetch(`/api/tests/${testId}/questions?lang=${language}`);
+        
         if (!response.ok) {
           throw new Error("Failed to fetch questions");
         }
@@ -100,7 +102,7 @@ export default function IdeologyTest() {
     };
 
     fetchQuestions();
-  }, [testId]);
+  }, [testId, language]); // Add language as a dependency to refetch when language changes
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {

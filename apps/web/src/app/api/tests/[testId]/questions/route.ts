@@ -1,4 +1,5 @@
-import { getXataClient } from "@/lib/database/xata";
+import { Language } from "@/i18n";
+import { fetchQuestions } from "@/services/api/db-translate";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -14,7 +15,7 @@ interface QuestionResponse {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { testId: string } },
 ) {
   try {
@@ -26,31 +27,21 @@ export async function GET(
       return NextResponse.json(response, { status: 400 });
     }
 
-    const xata = getXataClient();
+    // Get the language from the request headers or query parameters
+    const language = request.nextUrl.searchParams.get('lang') || 'en';
+    
+    // Call the fetchQuestions function from db-translate.ts
+    const result = await fetchQuestions(language as Language, testId);
 
-    // Fetch all questions for the specified test
-    const questions = await xata.db.Questions.filter({ "test.test_id": testId }) // Filter by the test ID
-      .select(["question_id", "question", "effect", "sort_order"]) // Select necessary fields
-      .sort("sort_order", "asc") // Sort by sort_order
-      .getAll();
-
-    // Check if questions were found
-    if (!questions || questions.length === 0) {
-      const response: QuestionResponse = {
-        error: "No questions found for this test",
-      };
-      return NextResponse.json(response, { status: 404 });
+    // If there's an error, return the appropriate response
+    if (result.error) {
+      const status = result.error.includes("Invalid") ? 400 : 
+                    result.error.includes("No questions found") ? 404 : 500;
+      return NextResponse.json(result, { status });
     }
 
-    // Transform the questions to match the expected format
-    const formattedQuestions = questions.map((q) => ({
-      id: q.question_id,
-      question: q.question,
-      effect: q.effect, // Use the effect values from the database
-    }));
-
-    const response: QuestionResponse = { questions: formattedQuestions };
-    return NextResponse.json(response);
+    // Return the successful response
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching questions:", error);
     const response: QuestionResponse = { error: "Failed to fetch questions" };
